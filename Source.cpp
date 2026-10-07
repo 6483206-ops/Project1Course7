@@ -13,7 +13,7 @@ struct stClientData {
 	string Name;
 	string Phone;
 	int AccountBalance;
-	bool MarkOfDelete = false;
+	bool MarkForDelete = false;
 };
 
 enum enTasks {
@@ -65,6 +65,18 @@ stClientData ReadClientData() {
 	cin >> CD.AccountBalance;
 
 	return CD;
+}
+
+void PrintClientData(stClientData CD) {
+
+	cout << "\n\n";
+
+	cout << "Account Number : " << CD.AccountNumber << endl;
+	cout << "Pin Code       : " << CD.PinCode << endl;
+	cout << "Name           : " << CD.Name << endl;
+	cout << "Phone          : " << CD.Phone << endl;
+	cout << "Account Balance: " << CD.AccountBalance << endl;
+
 }
 
 void AppendClientRecordToFile(string FileName, string Record) {
@@ -124,6 +136,22 @@ stClientData ParseRecordToClient(string Record, string Diameter = "/#/") {
 
 	return ClientData;
 }
+
+void WriteClientsToFile(string FileName, vector <stClientData>& vClients) {
+
+	fstream MyFile;
+
+	MyFile.open(FileName, ios::out);
+
+	if (MyFile.is_open()) {
+		for (int i = 0; i < vClients.size(); i++) {
+			if (!vClients[i].MarkForDelete)
+				MyFile << CreateClientRecord(vClients[i], "/#/") << endl;
+		}
+	}
+
+}
+
 
 void ReadClientsFromFile(string FileName, vector<stClientData>& vClients) {
 
@@ -189,6 +217,14 @@ void InteractiveAddSingleClient(string FileName) {
 	AppendClientRecordToFile(FileName, CreateClientRecord(CD, "/#/"));
 }
 
+void DisplayAllClientsFromFile(string FileName) {
+
+	vector <stClientData> vClients;
+	ReadClientsFromFile(FileName, vClients);
+	system("cls");
+	PrintClientTable(vClients);
+}
+
 void InteractiveAddMultipleClients(string FileName) {
 	char MoreClients = 'y';
 	do {
@@ -203,12 +239,136 @@ void InteractiveAddMultipleClients(string FileName) {
 	DisplayAllClientsFromFile(FileName);
 }
 
-void DisplayAllClientsFromFile(string FileName) {
+int FindClientIndexInVector(vector <stClientData>& vClients, string AccountNumber) {
+
+	for (int i = 0; i < vClients.size(); i++) {
+		if (vClients[i].AccountNumber == AccountNumber) return i;
+	}
+
+	return -1;
+}
+
+void RemoveDeletedClientsFromVector(vector <stClientData>& vClients) {
+	vector <stClientData> vClients2;
+	int count = 0;
+
+	for (int i = 0; i < vClients.size(); i++) {
+		if (vClients[i].MarkForDelete)
+			continue;
+		vClients2.push_back(vClients[i]);
+		count++;
+	}
+
+	vClients = vClients2;
+
+}
+
+void MarkClientForDeletionInVector(vector <stClientData>& vClients, string AccountNumber, bool& deleteSuccess) {
+
+	int clientIndex = FindClientIndexInVector(vClients, AccountNumber);
+
+	if (clientIndex != -1) {
+		vClients[clientIndex].MarkForDelete = true;
+		deleteSuccess = true;
+	}
+	else {
+		deleteSuccess = false;
+		return;
+	}
+	RemoveDeletedClientsFromVector(vClients);
+
+}
+
+
+void DeleteClientFromFileByAccountNumber(string FileName, string AccountNumber, bool& deleteSuccess) {
 
 	vector <stClientData> vClients;
 	ReadClientsFromFile(FileName, vClients);
+
+	MarkClientForDeletionInVector(vClients, AccountNumber, deleteSuccess);
+
+	if (deleteSuccess) {
+		WriteClientsToFile(FileName, vClients);
+	}
+}
+
+void InteractiveDeleteMultipleClients(string FileName) {
+	char deleteMore = 'n';
+	char wantToDelete = 'n';
+	bool deleteSuccess = false;
+
+	string accountNumber;
+
+	do {
+		system("cls");
+
+		cout << "\n\n";
+		if (toupper(deleteMore) == 'N')
+			cout << "Enter the client account number you want to delete from " << FileName << ": ";
+		else
+			cout << "Enter the next client account number: ";
+		cin >> accountNumber;
+
+		cout << "\nDo you really want to delete the client " << accountNumber << "? (Y/N): ";
+		cin >> wantToDelete;
+
+		deleteSuccess = false;
+		if (toupper(wantToDelete) == 'Y') {
+			DeleteClientFromFileByAccountNumber(FileName, accountNumber, deleteSuccess);
+		}
+
+		if (deleteSuccess) {
+			cout << "\n\nThe client with account number " << accountNumber << " was deleted successfully.\n";
+		}
+		else {
+			cout << "The client with account number " << accountNumber << " was not found.\n";
+		}
+
+		cout << "\n\nDo you want to delete more clients? (Y/N): ";
+		cin >> deleteMore;
+
+	} while (toupper(deleteMore) == 'Y');
+
+	cout << "The file content after the delete operations:" << endl;
+	cout << "\n";
+	DisplayAllClientsFromFile(FileName);
+}
+
+stClientData FindClientInFileByAccountNumber(string FileName, string AccountNumber) {
+
+	string Record = "";
+
+	fstream MyFile;
+	MyFile.open(FileName, ios::in);
+
+	if (MyFile.is_open()) {
+		string line;
+		stClientData CD = {};
+
+		while (getline(MyFile, line)) {
+			CD = ParseRecordToClient(line);
+			if (CD.AccountNumber == AccountNumber)
+				return CD;
+		}
+	}
+
+
+}
+
+void FindClient(string FileName) {
 	system("cls");
-	PrintClientTable(vClients);
+	string AccountNumber;
+	cout << "Enter the Account number of the client you need : ";
+	cin >> AccountNumber;
+
+	stClientData CD = FindClientInFileByAccountNumber(FileName, AccountNumber);
+	PrintClientData(CD);
+
+	cout << "\nPress Enter to return to the Main Menu...";
+	string _pause;
+	// Consume any leftover newline and then wait for the user to press Enter
+	getline(cin, _pause);
+	getline(cin, _pause);
 }
 
 void WhatTheTask(string FileName,enTasks Task, bool& Is_End) {
@@ -220,7 +380,12 @@ void WhatTheTask(string FileName,enTasks Task, bool& Is_End) {
 	case enTasks::AddNewClient :
 		InteractiveAddMultipleClients(FileName);
 		break;
-
+	case enTasks::DeleteClient :
+		InteractiveDeleteMultipleClients(FileName);
+		break;
+	case enTasks::FindClient :
+		FindClient(FileName);
+		break;
 
 	}
 	
