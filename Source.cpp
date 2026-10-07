@@ -25,6 +25,58 @@ enum enTasks {
 	Exit = 6
 };
 
+vector<string> SplitString(string S1, string delim);
+stClientData ReadClientData();
+void PrintClientData(stClientData CD);
+void AppendClientRecordToFile(string FileName, string Record);
+string CreateClientRecord(stClientData CD, string Diameter);
+stClientData ParseRecordToClient(string Record,string Diameter);
+void WriteClientsToFile(string FileName, vector <stClientData>& vClients);
+void ReadClientsFromFile(string FileName, vector<stClientData>& vClients);
+void PrintClientTableHeader(int Count);
+void PrintClientRow(stClientData& Client);
+void PrintClientTable(vector <stClientData>& vClients);
+void InteractiveAddSingleClient(string FileName);
+void DisplayAllClientsFromFile(string FileName);
+void InteractiveAddMultipleClients(string FileName);
+int FindClientIndexInVector(vector <stClientData>& vClients, string AccountNumber);
+void RemoveDeletedClientsFromVector(vector <stClientData>& vClients);
+void MarkClientForDeletionInVector(vector <stClientData>& vClients, string AccountNumber, bool& deleteSuccess);
+void DeleteClientFromFileByAccountNumber(string FileName, string AccountNumber, bool& deleteSuccess);
+void InteractiveDeleteMultipleClients(string FileName);
+stClientData FindClientInFileByAccountNumber(string FileName, string AccountNumber);
+void FindClientByAccountNumber(string FileName);
+void UpdateClientInVector(vector <stClientData>& vClients, string AccountNumber);
+void UpdateClientInformation(string FileName);
+void WhatTheTask(string FileName,enTasks Task, bool& Is_End);
+void PrintTheMainMenu(enTasks& Task);
+void PrintEndCaption();
+void StartTheProgram();
+
+
+
+
+
+
+
+int main() {
+
+	StartTheProgram();
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 vector<string> SplitString(string S1, string delim) {
 
 	vector <string> vString;
@@ -164,7 +216,7 @@ void ReadClientsFromFile(string FileName, vector<stClientData>& vClients) {
 		stClientData client;
 
 		while (getline(MyFile, line)) {
-			client = ParseRecordToClient(line);
+			client = ParseRecordToClient(line,"/#/");
 			vClients.push_back(client);
 
 		}
@@ -346,7 +398,7 @@ stClientData FindClientInFileByAccountNumber(string FileName, string AccountNumb
 		stClientData CD = {};
 
 		while (getline(MyFile, line)) {
-			CD = ParseRecordToClient(line);
+			CD = ParseRecordToClient(line,"/#/");
 			if (CD.AccountNumber == AccountNumber)
 				return CD;
 		}
@@ -355,7 +407,7 @@ stClientData FindClientInFileByAccountNumber(string FileName, string AccountNumb
 
 }
 
-void FindClient(string FileName) {
+void FindClientByAccountNumber(string FileName) {
 	system("cls");
 	string AccountNumber;
 	cout << "Enter the Account number of the client you need : ";
@@ -371,24 +423,71 @@ void FindClient(string FileName) {
 	getline(cin, _pause);
 }
 
-void WhatTheTask(string FileName,enTasks Task, bool& Is_End) {
+void UpdateClientInVector(vector <stClientData>& vClients, string AccountNumber) {
+
+	int IndexOfClients = FindClientIndexInVector(vClients, AccountNumber);
+
+	cout << "\n\nEnter Client Data Info : \n";
+	cout << string(25, '=') << endl;
+
+	cout << "Enter PinCode? ";
+	getline(cin >> ws, vClients[IndexOfClients].PinCode);
+	cout << "Enter Name? ";
+	getline(cin, vClients[IndexOfClients].Name);
+	cout << "Enter Phone? ";
+	getline(cin, vClients[IndexOfClients].Phone);
+	cout << "Enter Account Balance? ";
+	cin >> vClients[IndexOfClients].AccountBalance;
+	cout << string(25, '=') << endl;
+
+
+}
+
+void UpdateClientInformation(string FileName) {
+	system("cls");
+	string AccountNumber;
+	cout << "Enter the Account Number of client you want to update it : ";
+	cin >> AccountNumber;
+
+	vector <stClientData> vClients;
+
+	ReadClientsFromFile(FileName, vClients);
+
+	UpdateClientInVector(vClients, AccountNumber);
+
+	WriteClientsToFile(FileName, vClients);
+
+	cout << "\nPress Enter to return to the Main Menu...";
+	string _pause;
+	// Consume any leftover newline and then wait for the user to press Enter
+	getline(cin, _pause);
+	getline(cin, _pause);
+
+}
+
+void WhatTheTask(string FileName, enTasks Task, bool& Is_End) {
 
 	switch (Task) {
-	case enTasks::ChowClientList :
+	case enTasks::ChowClientList:
 		DisplayAllClientsFromFile(FileName);
 		break;
-	case enTasks::AddNewClient :
+	case enTasks::AddNewClient:
 		InteractiveAddMultipleClients(FileName);
 		break;
-	case enTasks::DeleteClient :
+	case enTasks::DeleteClient:
 		InteractiveDeleteMultipleClients(FileName);
 		break;
-	case enTasks::FindClient :
-		FindClient(FileName);
+	case enTasks::FindClient:
+		FindClientByAccountNumber(FileName);
 		break;
-
+	case enTasks::UpdateClientInfo:
+		UpdateClientInformation(FileName);
+		break;
+	case enTasks::Exit:
+		Is_End = true;
+		break;
 	}
-	
+
 
 }
 
@@ -437,7 +536,7 @@ void StartTheProgram() {
 		PrintTheMainMenu(Task);
 
 		bool Is_End = false;
-		WhatTheTask(FileName,Task, Is_End);
+		WhatTheTask(FileName, Task, Is_End);
 
 		if (Is_End) {
 
@@ -452,13 +551,3 @@ void StartTheProgram() {
 
 }
 
-
-
-
-
-
-int main() {
-
-	StartTheProgram();
-
-}
