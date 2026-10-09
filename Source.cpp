@@ -11,6 +11,8 @@
 #include <iomanip>
 
 using namespace std;
+
+// Global file name for client data
 string FileName = "ClientsData";
 struct stClientData {
 	string AccountNumber;
@@ -33,28 +35,28 @@ enum enTasks {
 vector<string> SplitString(string S1, string delim);
 stClientData ReadClientData();
 void PrintClientData(stClientData CD);
-void AppendClientRecordToFile(string FileName, string Record);
+void AppendClientRecordToFile(string Record);
 string CreateClientRecord(stClientData CD, string Diameter);
 stClientData ParseRecordToClient(string Record,string Diameter);
-void WriteClientsToFile(string FileName, vector <stClientData>& vClients);
-void ReadClientsFromFile(string FileName, vector<stClientData>& vClients);
+void WriteClientsToFile(vector <stClientData>& vClients);
+void ReadClientsFromFile(vector<stClientData>& vClients);
 void PrintClientTableHeader(int Count);
 void PrintClientRow(stClientData& Client);
 void PrintClientTable(vector <stClientData>& vClients);
-void InteractiveAddSingleClient(string FileName);
-void DisplayAllClientsFromFile(string FileName);
-void InteractiveAddMultipleClients(string FileName);
+void InteractiveAddSingleClient();
+void DisplayAllClientsFromFile();
+void InteractiveAddMultipleClients();
 int FindClientIndexInVector(vector <stClientData>& vClients, string AccountNumber);
 void RemoveDeletedClientsFromVector(vector <stClientData>& vClients);
 void MarkClientForDeletionInVector(vector <stClientData>& vClients, string AccountNumber, bool& deleteSuccess);
-void DeleteClientFromFileByAccountNumber(string FileName, string AccountNumber, bool& deleteSuccess);
-void InteractiveDeleteMultipleClients(string FileName);
-stClientData FindClientInFileByAccountNumber(string FileName, string AccountNumber);
-void FindClientByAccountNumber(string FileName);
+void DeleteClientFromFileByAccountNumber(string AccountNumber, bool& deleteSuccess);
+void InteractiveDeleteMultipleClients();
+stClientData FindClientInFileByAccountNumber(string AccountNumber);
+void FindClientByAccountNumber();
 void UpdateClientInVector(vector <stClientData>& vClients, string AccountNumber);
-void UpdateClientInformation(string FileName);
+void UpdateClientInformation();
 enTasks WhatTheTask();
-void PerformeTheTask(string FileName,enTasks Task);
+void PerformeTheTask(enTasks Task);
 void PrintTheMainMenu();
 void PrintEndCaption();
 void StartTheProgram();
@@ -81,7 +83,7 @@ int main() {
 
 
 
-bool IfTheAccountNumperFound(string FileName, string AccountNumber) {
+bool IfTheAccountNumperFound(string AccountNumber) {
 
 	fstream MyFile;
 	MyFile.open(FileName, ios::in);
@@ -130,9 +132,9 @@ vector<string> SplitString(string S1, string delim) {
 
 stClientData ReadClientData() {
 	stClientData CD;
-	cout << "Enter Account Number? ";
+    cout << "Enter Account Number? ";
 	getline(cin >> ws, CD.AccountNumber);
-	while (IfTheAccountNumperFound(FileName, CD.AccountNumber)) {
+	while (IfTheAccountNumperFound(CD.AccountNumber)) {
 		cout << "\nThe Account Numper " << CD.AccountNumber << " found in the file...\n";
 		cout << "Enter another one : ";
 		getline(cin >> ws, CD.AccountNumber);
@@ -161,7 +163,7 @@ void PrintClientData(stClientData CD) {
 
 }
 
-void AppendClientRecordToFile(string FileName, string Record) {
+void AppendClientRecordToFile(string Record) {
 
 	fstream MyFile;
 
@@ -219,7 +221,7 @@ stClientData ParseRecordToClient(string Record, string Diameter = "/#/") {
 	return ClientData;
 }
 
-void WriteClientsToFile(string FileName, vector <stClientData>& vClients) {
+void WriteClientsToFile(vector <stClientData>& vClients) {
 
 	fstream MyFile;
 
@@ -235,7 +237,7 @@ void WriteClientsToFile(string FileName, vector <stClientData>& vClients) {
 }
 
 
-void ReadClientsFromFile(string FileName, vector<stClientData>& vClients) {
+void ReadClientsFromFile(vector<stClientData>& vClients) {
 
 	fstream MyFile;
 
@@ -288,25 +290,25 @@ void PrintClientTable(vector <stClientData>& vClients) {
 
 }
 
-void InteractiveAddSingleClient(string FileName) {
+void InteractiveAddSingleClient() {
 	stClientData CD;
 	CD = ReadClientData();
-	AppendClientRecordToFile(FileName, CreateClientRecord(CD, "/#/"));
+	AppendClientRecordToFile(CreateClientRecord(CD, "/#/"));
 }
 
-void DisplayAllClientsFromFile(string FileName) {
+void DisplayAllClientsFromFile() {
 
 	vector <stClientData> vClients;
-	ReadClientsFromFile(FileName, vClients);
+	ReadClientsFromFile(vClients);
 	PrintClientTable(vClients);
 }
 
-void InteractiveAddMultipleClients(string FileName) {
+void InteractiveAddMultipleClients() {
 	char MoreClients = 'y';
 	do {
 		system("cls");
 		cout << "Add new client : " << endl;
-		InteractiveAddSingleClient(FileName);
+        InteractiveAddSingleClient();
 		cout << "\nWant to add more client ? ";
 		cin >> MoreClients;
 	} while (toupper(MoreClients) == 'Y');
@@ -354,19 +356,19 @@ void MarkClientForDeletionInVector(vector <stClientData>& vClients, string Accou
 }
 
 
-void DeleteClientFromFileByAccountNumber(string FileName, string AccountNumber, bool& deleteSuccess) {
+void DeleteClientFromFileByAccountNumber(string AccountNumber, bool& deleteSuccess) {
 
 	vector <stClientData> vClients;
-	ReadClientsFromFile(FileName, vClients);
+	ReadClientsFromFile(vClients);
 
 	MarkClientForDeletionInVector(vClients, AccountNumber, deleteSuccess);
 
 	if (deleteSuccess) {
-		WriteClientsToFile(FileName, vClients);
+		WriteClientsToFile(vClients);
 	}
 }
 
-void InteractiveDeleteMultipleClients(string FileName) {
+void InteractiveDeleteMultipleClients() {
 	char deleteMore = 'n';
 	char wantToDelete = 'n';
 	bool deleteSuccess = false;
@@ -387,8 +389,8 @@ void InteractiveDeleteMultipleClients(string FileName) {
 		cin >> wantToDelete;
 
 		deleteSuccess = false;
-		if (toupper(wantToDelete) == 'Y') {
-			DeleteClientFromFileByAccountNumber(FileName, accountNumber, deleteSuccess);
+        if (toupper(wantToDelete) == 'Y') {
+			DeleteClientFromFileByAccountNumber(accountNumber, deleteSuccess);
 		}
 
 		if (deleteSuccess) {
@@ -406,12 +408,12 @@ void InteractiveDeleteMultipleClients(string FileName) {
 	cout << endl;
 }
 
-stClientData FindClientInFileByAccountNumber(string FileName, string AccountNumber) {
+stClientData FindClientInFileByAccountNumber(string AccountNumber) {
 
 	string Record = "";
 
 	fstream MyFile;
-	MyFile.open(FileName, ios::in);
+    MyFile.open(FileName, ios::in);
 
 	if (MyFile.is_open()) {
 		string line;
@@ -429,15 +431,15 @@ stClientData FindClientInFileByAccountNumber(string FileName, string AccountNumb
 
 }
 
-void FindClientByAccountNumber(string FileName) {
+void FindClientByAccountNumber() {
 	system("cls");
 	string AccountNumber;
 	cout << "Enter the Account number of the client you need : ";
 	cin >> AccountNumber;
 
-	stClientData CD = FindClientInFileByAccountNumber(FileName, AccountNumber);
+	stClientData CD = FindClientInFileByAccountNumber(AccountNumber);
 	PrintClientData(CD);
-    
+
 	cout << "\n";
 }
 
@@ -461,7 +463,7 @@ void UpdateClientInVector(vector <stClientData>& vClients, string AccountNumber)
 
 }
 
-void UpdateClientInformation(string FileName) {
+void UpdateClientInformation() {
 	system("cls");
 	string AccountNumber;
 	cout << "Enter the Account Number of client you want to update it : ";
@@ -469,11 +471,11 @@ void UpdateClientInformation(string FileName) {
 
 	vector <stClientData> vClients;
 
-	ReadClientsFromFile(FileName, vClients);
+	ReadClientsFromFile(vClients);
 
 	UpdateClientInVector(vClients, AccountNumber);
 
-	WriteClientsToFile(FileName, vClients);
+	WriteClientsToFile(vClients);
 
 	cout << "\n";
 
@@ -485,29 +487,29 @@ void ReturnToMainMenue() {
 	PrintTheMainMenu();
 }
 
-void PerformeTheTask(string FileName, enTasks Task) {
+void PerformeTheTask(enTasks Task) {
 
 	system("cls");
 
 	switch (Task) {
 	case enTasks::ChowClientList:
-		DisplayAllClientsFromFile(FileName);
+        DisplayAllClientsFromFile();
 		ReturnToMainMenue();
 		break;
 	case enTasks::AddNewClient:
-		InteractiveAddMultipleClients(FileName);
+        InteractiveAddMultipleClients();
 		ReturnToMainMenue();
 		break;
 	case enTasks::DeleteClient:
-		InteractiveDeleteMultipleClients(FileName);
+        InteractiveDeleteMultipleClients();
 		ReturnToMainMenue();
 		break;
 	case enTasks::FindClient:
-		FindClientByAccountNumber(FileName);
+        FindClientByAccountNumber();
 		ReturnToMainMenue();
 		break;
 	case enTasks::UpdateClientInfo:
-		UpdateClientInformation(FileName);
+        UpdateClientInformation();
 		ReturnToMainMenue();
 		break;
 	case enTasks::Exit:
@@ -559,16 +561,13 @@ void PrintEndCaption() {
 }
 
 void StartTheProgram() {
-
-	string FileName = "ClientsData";
-
 	while (true) {
 		
 		PrintTheMainMenu();
 
 		enTasks Task;
 		Task = WhatTheTask();
-		PerformeTheTask(FileName, Task);
+        PerformeTheTask(Task);
 		
 	}
 
