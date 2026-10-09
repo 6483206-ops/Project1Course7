@@ -1,3 +1,8 @@
+
+//The Programer Hasan Hlala
+//This Program is a simple example of Banks Programs
+//I write this code as a project in the end of the 7 course of Abo Hadhoud courses 
+
 #include <iostream>
 #include <cstdlib>
 #include <string>
@@ -6,7 +11,7 @@
 #include <iomanip>
 
 using namespace std;
-
+string FileName = "ClientsData";
 struct stClientData {
 	string AccountNumber;
 	string PinCode;
@@ -48,8 +53,9 @@ stClientData FindClientInFileByAccountNumber(string FileName, string AccountNumb
 void FindClientByAccountNumber(string FileName);
 void UpdateClientInVector(vector <stClientData>& vClients, string AccountNumber);
 void UpdateClientInformation(string FileName);
-void WhatTheTask(string FileName,enTasks Task, bool& Is_End);
-void PrintTheMainMenu(enTasks& Task);
+enTasks WhatTheTask();
+void PerformeTheTask(string FileName,enTasks Task);
+void PrintTheMainMenu();
 void PrintEndCaption();
 void StartTheProgram();
 
@@ -75,6 +81,25 @@ int main() {
 
 
 
+bool IfTheAccountNumperFound(string FileName, string AccountNumber) {
+
+	fstream MyFile;
+	MyFile.open(FileName, ios::in);
+
+	if (MyFile.is_open()) {
+		string line;
+		stClientData CD = {};
+
+		while (getline(MyFile, line)) {
+			CD = ParseRecordToClient(line, "/#/");
+			if (CD.AccountNumber == AccountNumber)
+				return true;
+		}
+		MyFile.close();
+	}
+
+	return false;
+}
 
 
 vector<string> SplitString(string S1, string delim) {
@@ -107,6 +132,11 @@ stClientData ReadClientData() {
 	stClientData CD;
 	cout << "Enter Account Number? ";
 	getline(cin >> ws, CD.AccountNumber);
+	while (IfTheAccountNumperFound(FileName, CD.AccountNumber)) {
+		cout << "\nThe Account Numper " << CD.AccountNumber << " found in the file...\n";
+		cout << "Enter another one : ";
+		getline(cin >> ws, CD.AccountNumber);
+	}
 	cout << "Enter PinCode? ";
 	getline(cin, CD.PinCode);
 	cout << "Enter Name? ";
@@ -256,11 +286,6 @@ void PrintClientTable(vector <stClientData>& vClients) {
 		}
 	}
 
-	cout << "\nPress Enter to return to the Main Menu...";
-	string _pause;
-	// Consume any leftover newline and then wait for the user to press Enter
-	getline(cin, _pause);
-	getline(cin, _pause);
 }
 
 void InteractiveAddSingleClient(string FileName) {
@@ -273,7 +298,6 @@ void DisplayAllClientsFromFile(string FileName) {
 
 	vector <stClientData> vClients;
 	ReadClientsFromFile(FileName, vClients);
-	system("cls");
 	PrintClientTable(vClients);
 }
 
@@ -286,9 +310,7 @@ void InteractiveAddMultipleClients(string FileName) {
 		cout << "\nWant to add more client ? ";
 		cin >> MoreClients;
 	} while (toupper(MoreClients) == 'Y');
-
-	cout << "\n\n The file content after added the client(s) : " << endl;
-	DisplayAllClientsFromFile(FileName);
+	cout << endl;
 }
 
 int FindClientIndexInVector(vector <stClientData>& vClients, string AccountNumber) {
@@ -380,10 +402,8 @@ void InteractiveDeleteMultipleClients(string FileName) {
 		cin >> deleteMore;
 
 	} while (toupper(deleteMore) == 'Y');
-
-	cout << "The file content after the delete operations:" << endl;
-	cout << "\n";
-	DisplayAllClientsFromFile(FileName);
+    
+	cout << endl;
 }
 
 stClientData FindClientInFileByAccountNumber(string FileName, string AccountNumber) {
@@ -402,6 +422,8 @@ stClientData FindClientInFileByAccountNumber(string FileName, string AccountNumb
 			if (CD.AccountNumber == AccountNumber)
 				return CD;
 		}
+
+		MyFile.close();
 	}
 
 
@@ -415,12 +437,8 @@ void FindClientByAccountNumber(string FileName) {
 
 	stClientData CD = FindClientInFileByAccountNumber(FileName, AccountNumber);
 	PrintClientData(CD);
-
-	cout << "\nPress Enter to return to the Main Menu...";
-	string _pause;
-	// Consume any leftover newline and then wait for the user to press Enter
-	getline(cin, _pause);
-	getline(cin, _pause);
+    
+	cout << "\n";
 }
 
 void UpdateClientInVector(vector <stClientData>& vClients, string AccountNumber) {
@@ -457,43 +475,61 @@ void UpdateClientInformation(string FileName) {
 
 	WriteClientsToFile(FileName, vClients);
 
-	cout << "\nPress Enter to return to the Main Menu...";
-	string _pause;
-	// Consume any leftover newline and then wait for the user to press Enter
-	getline(cin, _pause);
-	getline(cin, _pause);
+	cout << "\n";
 
 }
 
-void WhatTheTask(string FileName, enTasks Task, bool& Is_End) {
+void ReturnToMainMenue() {
+	cout << "\nPress any key to return to main menue...." << endl;
+	system("pause>0");
+	PrintTheMainMenu();
+}
+
+void PerformeTheTask(string FileName, enTasks Task) {
+
+	system("cls");
 
 	switch (Task) {
 	case enTasks::ChowClientList:
 		DisplayAllClientsFromFile(FileName);
+		ReturnToMainMenue();
 		break;
 	case enTasks::AddNewClient:
 		InteractiveAddMultipleClients(FileName);
+		ReturnToMainMenue();
 		break;
 	case enTasks::DeleteClient:
 		InteractiveDeleteMultipleClients(FileName);
+		ReturnToMainMenue();
 		break;
 	case enTasks::FindClient:
 		FindClientByAccountNumber(FileName);
+		ReturnToMainMenue();
 		break;
 	case enTasks::UpdateClientInfo:
 		UpdateClientInformation(FileName);
+		ReturnToMainMenue();
 		break;
 	case enTasks::Exit:
-		Is_End = true;
+		PrintEndCaption();
 		break;
+		
 	}
-
 
 }
 
-void PrintTheMainMenu(enTasks& Task) {
+enTasks WhatTheTask() {
 
 	int n;
+	cout << "\nEnter The number (1 to 6) ? ";
+	cin >> n;
+	return (enTasks)n;
+
+}
+
+void PrintTheMainMenu() {
+
+	system("cls");
 
 	string MainMenu = "Main Menue Screen";
 	int LengthOfLine = 10 + MainMenu.length() + 10;
@@ -508,9 +544,6 @@ void PrintTheMainMenu(enTasks& Task) {
 	cout << string(5, ' ') << "[6] Exit.\n";
 	cout << string(LengthOfLine, '=') << endl;
 
-	cout << "Chose what do you want to do? [1 to 6]? ";
-	cin >> n;
-	Task = enTasks(n);
 }
 
 void PrintEndCaption() {
@@ -530,21 +563,13 @@ void StartTheProgram() {
 	string FileName = "ClientsData";
 
 	while (true) {
-		system("cls");
+		
+		PrintTheMainMenu();
+
 		enTasks Task;
-
-		PrintTheMainMenu(Task);
-
-		bool Is_End = false;
-		WhatTheTask(FileName, Task, Is_End);
-
-		if (Is_End) {
-
-			PrintEndCaption();
-			return;
-
-		}
-
+		Task = WhatTheTask();
+		PerformeTheTask(FileName, Task);
+		
 	}
 
 
