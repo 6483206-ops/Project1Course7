@@ -63,6 +63,14 @@ stClientData FindClientInFileByAccountNumber(string AccountNumber);
 void FindClientByAccountNumber();
 void UpdateClientInVector(vector <stClientData>& vClients, string AccountNumber);
 void UpdateClientInformation();
+void ReturnToTransactionsMainMenue();
+string ReadAccountNumber();
+void PrintDepositScreen();
+void DepositInClient();
+void PerformeTransaction(enTransactions Trans);
+enTransactions ReadTheTransaction();
+void PrintTransactionsMainMenue();
+void PerformeTransactions();
 enTasks WhatTheTask();
 void PerformeTheTask(enTasks Task);
 void PrintTheMainMenu();
@@ -443,8 +451,7 @@ stClientData FindClientInFileByAccountNumber(string AccountNumber) {
 void FindClientByAccountNumber() {
 	system("cls");
 	string AccountNumber;
-	cout << "Enter the Account number of the client you need : ";
-	cin >> AccountNumber;
+	AccountNumber = ReadAccountNumber();
 
 	stClientData CD = FindClientInFileByAccountNumber(AccountNumber);
 	PrintClientData(CD);
@@ -493,10 +500,83 @@ void UpdateClientInformation() {
 void ReturnToMainMenue() {
 	cout << "\nPress any key to return to main menue...." << endl;
 	system("pause>0");
-	PrintTheMainMenu();
 }
 
-enTransactions WhatTheTransaction() {
+void PrintDepositScreen() {
+	string DepositScreen = "Deposit Screen";
+	int LineLength = 10 + DepositScreen.length() + 10;
+
+	cout << string(LineLength, '-') << endl;
+	cout << string(10, ' ') << DepositScreen << endl;
+	cout << string(LineLength, '-') << endl;
+}
+
+string ReadAccountNumber() {
+	string AccountNumber;
+	
+	cout << "Enter the Account Number : ";
+	cin >> AccountNumber;
+
+	while (!IfTheAccountNumperFound(AccountNumber)) {
+		cout << "The Account Number not found!!!" << endl;
+		cout << "Please enter a rigth one : ";
+		cin >> AccountNumber;
+	}
+	return AccountNumber;
+}
+
+void ReturnToTransactionsMainMenue() {
+	cout << "\nPress Any Key to return to Transactions Main Menue....\n";
+	system("pause>0");
+}
+
+void DepositInClient() {
+	PrintDepositScreen();
+	cout << "\n";
+
+	vector <stClientData> vClients;
+	string AccountNumber = ReadAccountNumber();
+
+	ReadClientsFromFile(vClients);
+	int Index = FindClientIndexInVector(vClients, AccountNumber);
+
+	cout << "The Following are the client data : ";
+	PrintClientData(vClients[Index]);
+	
+	int DepositAmmount = 0;
+	cout << "Please enter a deposit ammount : ";
+	cin >> DepositAmmount;
+
+	char SureDeposit;
+	cout << "Are you sure you want to add " << DepositAmmount << "to this Account ? y/n: ";
+	cin >> SureDeposit;
+	if (toupper(SureDeposit) == 'Y') {
+		vClients[Index].AccountBalance += DepositAmmount;
+		WriteClientsToFile(vClients);
+		cout << "The Account Balance after the addition is : " << vClients[Index].AccountBalance << endl;
+	}
+	else {
+		return;
+	}
+
+}
+
+void PerformeTransaction(enTransactions Trans,bool &PerformeMore) {
+
+	system("cls");
+
+	switch (Trans) {
+	case enTransactions::Deposit:
+		DepositInClient();
+		ReturnToTransactionsMainMenue();
+		break;
+	case enTransactions::MainMenue :
+		PerformeMore = false;
+		break;
+	}
+}
+
+enTransactions ReadTheTransaction() {
 	int n;
 	cout << "Choose what do you want to do? [1 to 4]? ";
 	cin >> n;
@@ -507,6 +587,7 @@ void PrintTransactionsMainMenue() {
 	string MainMenue = "Transactions Main Menue";
 	int LineLength = 16 + MainMenue.length() + 16;
 	cout << '\n';
+	cout << string(16, ' ') << MainMenue << endl;
 	cout << string(LineLength, '=') << endl;
 	cout << string(8, ' ') << "[1] Deposit.\n";
 	cout << string(8, ' ') << "[2] Withdraw.\n";
@@ -516,13 +597,14 @@ void PrintTransactionsMainMenue() {
 }
 
 void PerformeTransactions() {
+	bool PerformeMore = true;
 
-	while (true) {
+	while (PerformeMore) {
 		enTransactions Trans;
-	
+		system("cls");
 		PrintTransactionsMainMenue();
-		Trans = WhatTheTransaction();
-
+		Trans = ReadTheTransaction();
+		PerformeTransaction(Trans,PerformeMore);
 	}
 }
 
@@ -552,7 +634,8 @@ void PerformeTheTask(enTasks Task) {
 		ReturnToMainMenue();
 		break;
 	case enTasks::Transactions :
-
+		PerformeTransactions();
+		ReturnToMainMenue();
 	case enTasks::Exit :
 		PrintEndCaption();
 		break;
@@ -564,7 +647,7 @@ void PerformeTheTask(enTasks Task) {
 enTasks WhatTheTask() {
 
 	int n;
-	cout << "\nEnter The number (1 to 6) ? ";
+	cout << "\nEnter The number (1 to 7) ? ";
 	cin >> n;
 	return (enTasks)n;
 
@@ -584,7 +667,8 @@ void PrintTheMainMenu() {
 	cout << string(5, ' ') << "[3] Delete Client.\n";
 	cout << string(5, ' ') << "[4] Update Client\n";
 	cout << string(5, ' ') << "[5] Find Client.\n";
-	cout << string(5, ' ') << "[6] Exit.\n";
+	cout << string(5, ' ') << "[6] Transactions.\n";
+	cout << string(5, ' ') << "[7] Exit.\n";
 	cout << string(LengthOfLine, '=') << endl;
 
 }
