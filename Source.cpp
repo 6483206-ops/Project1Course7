@@ -29,7 +29,15 @@ enum enTasks {
 	DeleteClient = 3,
 	UpdateClientInfo = 4,
 	FindClient = 5,
-	Exit = 6
+	Transactions = 6,
+	Exit = 7
+};
+
+enum enTransactions {
+	Deposit =1,
+	Withdraw =2,
+	TotalBalance =3,
+	MainMenue =4
 };
 
 vector<string> SplitString(string S1, string delim);
@@ -59,6 +67,7 @@ enTasks WhatTheTask();
 void PerformeTheTask(enTasks Task);
 void PrintTheMainMenu();
 void PrintEndCaption();
+
 void StartTheProgram();
 
 
@@ -487,6 +496,36 @@ void ReturnToMainMenue() {
 	PrintTheMainMenu();
 }
 
+enTransactions WhatTheTransaction() {
+	int n;
+	cout << "Choose what do you want to do? [1 to 4]? ";
+	cin >> n;
+	return (enTransactions)n;
+}
+
+void PrintTransactionsMainMenue() {
+	string MainMenue = "Transactions Main Menue";
+	int LineLength = 16 + MainMenue.length() + 16;
+	cout << '\n';
+	cout << string(LineLength, '=') << endl;
+	cout << string(8, ' ') << "[1] Deposit.\n";
+	cout << string(8, ' ') << "[2] Withdraw.\n";
+	cout << string(8, ' ') << "[3] Total Balances\n";
+	cout << string(8, ' ') << "[4] Main Menue.\n";
+	cout << string(LineLength, '=') << endl;
+}
+
+void PerformeTransactions() {
+
+	while (true) {
+		enTransactions Trans;
+	
+		PrintTransactionsMainMenue();
+		Trans = WhatTheTransaction();
+
+	}
+}
+
 void PerformeTheTask(enTasks Task) {
 
 	system("cls");
@@ -512,7 +551,9 @@ void PerformeTheTask(enTasks Task) {
         UpdateClientInformation();
 		ReturnToMainMenue();
 		break;
-	case enTasks::Exit:
+	case enTasks::Transactions :
+
+	case enTasks::Exit :
 		PrintEndCaption();
 		break;
 		
